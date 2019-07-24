@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <title>AMQP Ticker consumer</title>
+
+  <link rel="stylesheet" href="bootstrap/dist/css/bootstrap.min.css">
+
+  <script src="rhea/dist/rhea.min.js"></script>
+  <style>
+main > .container {
+  padding: 60px 15px 0;
+}
+  </style>
+</head>
+
+<body class="d-flex flex-column h-100">
+
+<script>
+var request = new XMLHttpRequest;
+request.open("GET", "/con.info", true);
+request.onload = function () {
+	if (request.status >= 200 && request.status < 400 ) {
+		connect(JSON.parse(request.responseText));
+	}
+};
+request.onerror = function () {
+	alert("Failed to open connection");
+};
+request.send();
+
+function connect(ci) {
+	console.log("Connection info", ci);
+	var client = require("rhea");
+	client.options.username = ci.username
+	client.options.password = ci.password
+	client.on("message", function (context) {
+		console.log(context.message.body.content.toString());
+		append(JSON.parse(context.message.body.content.toString()));
+	});
+	console.log("Client", client)
+	var ws = client.websocket_connect(WebSocket);
+	console.log("WS", ws)
+	var connection = client.connect({"connection_details":ws(ci.uri, ci.options), "reconnect":true, "username": ci.username, "password": ci.password });
+	connection.open_receiver("stock/RHAT");
+}
+function append(txt) {
+	var card = document.getElementById("RHAT-card");
+
+	var c = "card mb-3 ";
+	if ( txt.trend > 0 ) {
+		c += "card bg-success"
+	} else if ( txt.trend < 0 ) {
+		c += "card bg-danger"
+	} else {
+		c += "bg-light"
+	}
+	
+	card.className = c
+	
+	document.getElementById("RHAT-value").innerHTML = txt.price.toFixed(2) + " €";
+}
+</script>
+
+   <header>
+  <div class="collapse bg-dark" id="navbarHeader">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-8 col-md-7 py-4">
+          <h4 class="text-white">About</h4>
+          <p class="text-muted">
+            An example stock ticker consumer, showing the latest information, consumed from an AMQP 1.0 endpoint via websockets.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="navbar navbar-dark bg-dark shadow-sm">
+    <div class="container d-flex justify-content-between">
+      <a href="#" class="navbar-brand d-flex align-items-center">
+        <strong>Stock Ticker Example</strong>
+      </a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarHeader" aria-controls="navbarHeader" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main role="main" class="flex-shrink-0">
+
+  <div class="container">
+    <div class="row">
+      
+<div class="card-deck">
+
+<div class="card" id="RHAT-card" style="width: 18rem;">
+  <div class="card-header">
+    RHAT
+  </div>
+  <div class="card-body">
+    <h5 class="card-title" id="RHAT-value"></h5>
+  </div>
+</div>
+
+</div>
+      
+    </div>
+  </div>
+</main>
+
+  <script src="jquery/dist/jquery.slim.min.js"></script>
+  <script src="bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
