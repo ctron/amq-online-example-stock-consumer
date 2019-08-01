@@ -59,9 +59,9 @@ function append(txt) {
 	} else {
 		c += "bg-light"
 	}
-	
+
 	card.className = c
-	
+
 	document.getElementById("RHAT-value").innerHTML = txt.price.toFixed(2) + " €";
 }
 </script>
@@ -103,7 +103,7 @@ function append(txt) {
     RHAT
   </div>
   <div class="card-body">
-    <h5 class="card-title" id="RHAT-value"></h5>
+    <h5 class="card-title" id="RHAT-value"><span class="mute">&lt;unknown&gt;</span></h5>
   </div>
 </div>
 
